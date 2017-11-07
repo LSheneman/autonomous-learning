@@ -34,9 +34,8 @@ class Gate {  // abstact class. Assumes that a standard genome is being used.
  public:
     virtual double computeGateRMS(){return 0.0;}
     virtual double computeMutualInfo(){return 0.0;}
-    virtual double computeChannelEntropy(){return 0.0;}
-    virtual double getAppliedPosFeedback(){return 0.0;}
-    virtual double getAppliedNegFeedback(){return 0.0;}
+    virtual string getAppliedPosFeedback(){return "";}
+    virtual string getAppliedNegFeedback(){return "";}
   static void AddGate(int ID, function<shared_ptr<Gate>(shared_ptr<Genome>, int)> theFunction);
   static void setupGates();
   static function<shared_ptr<Gate>(shared_ptr<Genome>, int)> makeGate[256];

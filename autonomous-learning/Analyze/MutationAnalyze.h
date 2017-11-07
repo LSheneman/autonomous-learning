@@ -19,6 +19,7 @@
 #include "../Brain/Brain.h"
 #include "../Genome/Genome.h"
 #include "../World/World.h"
+#include "../World/BerryWorld.h"
 
 #include "../Utilities/Data.h"
 

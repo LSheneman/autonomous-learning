@@ -23,8 +23,7 @@
 #include "Group/Group.h"
 #include "Optimizer/Optimizer.h"
 #include "Organism/Organism.h"
-#include "World/World.h"
-#include "World/NavWorld.h"
+#include "World/NavWorldStats.h"
 
 #include "Utilities/Parameters.h"
 #include "Utilities/Random.h"
@@ -34,6 +33,18 @@
 
 using namespace std;
 
+vector<shared_ptr<Organism>> generateVectorOfUpdates(int min, int max, int interval){
+    vector<shared_ptr<Organism>> population;
+    for(int i= min; i<=max; i+=interval){
+        shared_ptr<Genome> genome(new Genome());
+        genome->loadSites("genome.csv", i);
+        
+        cout<<"load Organism: "<<i<<" length: "<< genome->sites.size()<<endl;
+        shared_ptr<Organism> org= make_shared<Organism>(make_shared<Genome>(genome), make_shared<Brain>());
+        population.push_back(org);
+    }
+    return population;
+}
 int main(int argc, const char * argv[]) {
 
   Parameters::initialize_parameters(argc, argv);  // loads command line and configFile values into registered parameters
@@ -58,7 +69,7 @@ int main(int argc, const char * argv[]) {
   //Optimizer *optimizer = (Optimizer*) new GA();
   //Optimizer *optimizer = (Optimizer*) new Tournament();
 
-  World *world = (World*) new NavWorld();  //new World();
+  World *world = (World*) new NavWorldStats();  //new World();
 
 ////  ///// to show org in world
 //  shared_ptr<Genome> testGenome = make_shared<Genome>();
@@ -71,25 +82,29 @@ int main(int argc, const char * argv[]) {
   //////////////////
   // define population
   //////////////////
+    
+    
+//        vector<shared_ptr<Organism>> population=generateVectorOfUpdates(0,1000,100);
 
   shared_ptr<Group> group;
 
   {
-    // a progenitor must exist - that is, one ancestor genome
-    Global::update = -1;  // before there was time, there was a progenitor
-
-    shared_ptr<Organism> progenitor = make_shared<Organism>(make_shared<Genome>(), make_shared<Brain>());  // make a organism with a genome and brain (if you need to change the types here is where you do it)
-
-    Global::update = 0;  // the beginning of time - now we construct the first population
-    vector<shared_ptr<Organism>> population;
-    for (int i = 0; i < Global::popSize; i++) {
-      shared_ptr<Genome> genome(new Genome());
-      genome->fillRandom();
-      shared_ptr<Organism> org(new Organism(progenitor, genome));
-      population.push_back(org);  // add a new org to population using progenitors template and a new random genome
-      population[population.size() - 1]->gender = Random::getInt(0, 1);  // assign a random gender to the new org
-    }
-    progenitor->kill();  // the progenitor has served it's purpose.
+//    // a progenitor must exist - that is, one ancestor genome
+//    Global::update = -1;  // before there was time, there was a progenitor
+//
+//    shared_ptr<Organism> progenitor = make_shared<Organism>(make_shared<Genome>(), make_shared<Brain>());  // make a organism with a genome and brain (if you need to change the types here is where you do it)
+//
+//    Global::update = 0;  // the beginning of time - now we construct the first population
+    vector<shared_ptr<Organism>> population=generateVectorOfUpdates(0,500000,100);
+//    vector<shared_ptr<Organism>> population;
+//    for (int i = 0; i < Global::popSize; i++) {
+//      shared_ptr<Genome> genome(new Genome());
+//      genome->fillRandom();
+//      shared_ptr<Organism> org(new Organism(progenitor, genome));
+//      population.push_back(org);  // add a new org to population using progenitors template and a new random genome
+//      population[population.size() - 1]->gender = Random::getInt(0, 1);  // assign a random gender to the new org
+//    }
+//    progenitor->kill();  // the progenitor has served it's purpose.
 
     shared_ptr<Default_Archivist> archivist;
 
@@ -101,12 +116,14 @@ int main(int argc, const char * argv[]) {
     }
     if (Default_Archivist::Arch_outputMethodStr == "snapshot") {
       archivist = make_shared<Snapshot_Archivist>();
+        cout<<"snapshot"<<endl;
     }
     if (Default_Archivist::Arch_outputMethodStr == "SSwD") {
       archivist = make_shared<SSwD_Archivist>();
     }
 
-    group = make_shared<Group>(population, make_shared<GA>(), archivist);
+    group = make_shared<Group>(population, make_shared<Tournament>(), archivist);
+     
   }
 
 //////////////////
@@ -122,22 +139,26 @@ int main(int argc, const char * argv[]) {
 //      cout << "unrecognized archive method \"" << Archivist::outputMethodStr << "\". Should be either \"LODwAP\" or \"SSwD\"\nExiting.\n";
 //      exit(1);
 //    }
-//  }
-  bool finished = false;  // when the archivist says we are done, we can stop!
-
-  while (!finished) {
+////  }
+//  bool finished = false;  // when the archivist says we are done, we can stop!
+//
+//  while (!finished) {
+    Global::update=0;
     world->evaluateFitness(group->population, false);  // evaluate each organism in the population using a World
-
-    finished = group->archive();  // save data, update memory and delete any unneeded data;
-
-    Global::update++;
-
-    group->optimize();  // update the population (reproduction and death)
-
-    cout << "update: " << Global::update - 1 << "   maxFitness: " << group->optimizer->maxFitness << "\n";
-  }
-
-  group->archive(1);  // flush any data that has not been output yet
+//
+//    finished = group->archive();  // save data, update memory and delete any unneeded data;
+//
+//    Global::update++;
+//
+//    group->optimize();  // update the population (reproduction and death)
+//
+//    cout << "update: " << Global::update - 1 << "   maxFitness: " << group->optimizer->maxFitness << "\n";
+//  }
+//
+  group->archive(0);  // flush any data that has not been output yet
+    
+    
+    
 
 //  if (Default_Archivist::Arch_outputMethodStr == "LODwAP") {  // if using LODwAP, write out some info about MRCA
 //    shared_ptr<Organism> FinalMRCA = group->population[0]->getMostRecentCommonAncestor(group->population[0]);
@@ -145,4 +166,5 @@ int main(int argc, const char * argv[]) {
 //  }
   return 0;
 }
+
 

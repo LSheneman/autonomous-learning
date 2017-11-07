@@ -8,8 +8,6 @@
 
 #include "NavWorld.h"
 
-int& NavWorld::num_of_maps = Parameters::register_parameter("NavWorld_num_of_maps", 21, "number of maps seen in evolution");
-
 Pos Pos::newPos(int X,int Y){
     Pos P;
     P.x=X;
@@ -52,7 +50,6 @@ void NavWorld::makeMap(){
             }
         targetX=makeNumberNotBorder(xDim);
         targetY=makeNumberNotBorder(yDim);
-//        cout<<targetX<<" : "<<targetY<<endl;
         distMap[targetX][targetY]=0;
         current.clear();
         next.clear();
@@ -75,7 +72,7 @@ void NavWorld::makeMap(){
     do{
         startX=rand()&(xDim-1);
         startY=rand()&(yDim-1);
-    } while(distMap[startX][startY]!=xDim/2);
+    } while(distMap[startX][startY]!=10);
     for(i=1;i<xDim-1;i++)
         for(j=1;j<yDim-1;j++)
             if(distMap[i][j]>0){
@@ -98,11 +95,11 @@ void NavWorld::evaluateFitness(vector<shared_ptr<Organism>> population,bool anal
     
     for (size_t i = 0; i < population.size(); i++) {
         double scoreTotal = 1.0;
-        for (int m = 0; m < num_of_maps; m++) {
+        for (int m = 0; m < 24; m++) {
             currentMapID=m;
             scoreTotal = scoreTotal * testIndividual(population[i], analyse+0.01);
         }
-        population[i]->score = (scoreTotal / 23.0);
+        population[i]->score = (scoreTotal / 24.0);
         population[i]->dataMap.Set("score", population[i]->score);
         population[i]->dataMap.Set("update", Global::update);
     }
@@ -125,7 +122,6 @@ double NavWorld::testIndividual(shared_ptr<Organism> org, bool analyse){
     for(t=0;t<steps;t++){
         for(i=0;i<4;i++)
             org->brain->states[i]=0.0;
-        //&3 means four input sensors
         org->brain->states[(dirMap[xPos][yPos]-dir)&3]=1.0;
         org->brain->update();//updateStates();
         int action=(Bit(org->brain->states[org->brain->nrOfBrainStates-2])<<1)+Bit(org->brain->states[org->brain->nrOfBrainStates-1]);
@@ -147,13 +143,13 @@ double NavWorld::testIndividual(shared_ptr<Organism> org, bool analyse){
             do{
                 xPos=rand()%xDim;
                 yPos=rand()%yDim;
-            }while (distMap[xPos][yPos] != xDim/2);
+            }while (distMap[xPos][yPos] != 10);
             dir=rand()&3;
         }
     }
 
     org->dataMap.Set("goalReachedFBON"+to_string(currentMapID), goalsReached);
-    cout<<currentMapID<<endl;
+    //Data::Add(goalsReached, "goalReachedFBON"+to_string(currentMapID), (Genome*)agent->genome);
     if(fitness<0.0)
         fitness=0.0;
     return fitness;

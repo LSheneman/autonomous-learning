@@ -57,7 +57,6 @@ private:
     void makeMap();
 public:
     NavWorld();
-    static int& num_of_maps;
     void evaluateFitness(vector<shared_ptr<Organism>> population,bool analyse);
     double testIndividual(shared_ptr<Organism> org,bool analyse);
 };

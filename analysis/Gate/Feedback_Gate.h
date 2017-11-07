@@ -17,8 +17,6 @@ class FeedbackGate : public Gate {
  private:
   vector<vector<double>> table;
   vector<vector<double>> originalTable;
-  vector<vector<double>> entropyTable;
-
   unsigned char posFBNode, negFBNode;
   unsigned char nrPos, nrNeg;
   vector<double> posLevelOfFB, negLevelOfFB;
@@ -26,8 +24,6 @@ class FeedbackGate : public Gate {
     
     vector<double> appliedPosFB;
     vector<double> appliedNegFB;
-    double totalPosForce=0.0;
-    double totalNegForce=0.0;
  public:
 
   static bool feedbackON;
@@ -41,10 +37,9 @@ class FeedbackGate : public Gate {
   virtual vector<int> getIns();
     virtual double computeGateRMS();
     virtual double computeMutualInfo();
-    virtual double computeChannelEntropy();
     virtual string name();
-    virtual double getAppliedPosFeedback();
-    virtual double getAppliedNegFeedback();
+    virtual string getAppliedPosFeedback();
+    virtual string getAppliedNegFeedback();
 };
 
 #endif /* defined(__BasicMarkovBrainTemplate__Feedback_Gate__) */
